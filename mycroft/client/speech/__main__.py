@@ -25,6 +25,7 @@ from mycroft.messagebus.message import Message
 from mycroft.util import create_daemon, wait_for_exit_signal, \
     reset_sigint_handler, create_echo_function
 from mycroft.util.log import LOG
+from mycroft.skills.core import MycroftSkill
 
 bus = None  # Mycroft messagebus connection
 lock = Lock()
@@ -195,6 +196,7 @@ def main():
     create_daemon(loop.run)
 
     wait_for_exit_signal()
+
 
 
 if __name__ == "__main__":

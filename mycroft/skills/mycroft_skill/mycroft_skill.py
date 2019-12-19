@@ -118,7 +118,7 @@ class MycroftSkill:
     to all Skill implementations.
 
     For information on how to get started with creating mycroft skills see
-    https://mycroft.ai/documentation/skills/introduction-developing-skills/
+    https://https://mycroft.ai/documentation/skills/introduction-developing-skills/
 
     Arguments:
         name (str): skill name
@@ -675,22 +675,9 @@ class MycroftSkill:
         Returns:
             string: The full path to the resource file or None if not found
         """
-        result = self._find_resource(res_name, self.lang, res_dirname)
-        if not result and self.lang != 'en-us':
-            # when resource not found try fallback to en-us
-            LOG.warning(
-                "Resource '{}' for lang '{}' not found: trying 'en-us'"
-                .format(res_name, self.lang)
-            )
-            result = self._find_resource(res_name, 'en-us', res_dirname)
-        return result
-
-    def _find_resource(self, res_name, lang, res_dirname=None):
-        """Finds a resource by name, lang and dir
-        """
         if res_dirname:
             # Try the old translated directory (dialog/vocab/regex)
-            path = join(self.root_dir, res_dirname, lang, res_name)
+            path = join(self.root_dir, res_dirname, self.lang, res_name)
             if exists(path):
                 return path
 
@@ -700,7 +687,7 @@ class MycroftSkill:
                 return path
 
         # New scheme:  search for res_name under the 'locale' folder
-        root_path = join(self.root_dir, 'locale', lang)
+        root_path = join(self.root_dir, 'locale', self.lang)
         for path, _, files in walk(root_path):
             if res_name in files:
                 return join(path, res_name)
@@ -1092,9 +1079,12 @@ class MycroftSkill:
             wait (bool):            set to True to block while the text
                                     is being spoken.
         """
-        data = data or {}
-        self.speak(self.dialog_renderer.render(key, data),
-                   expect_response, wait)
+        if key == "annuler":
+            self.bus.emit(Message("mycroft.stop"))
+        else:
+            data = data or {}
+            self.speak(self.dialog_renderer.render(key, data),
+                       expect_response, wait)
 
     def acknowledge(self):
         """Acknowledge a successful request.

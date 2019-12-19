@@ -261,27 +261,32 @@ class EventSchedulerInterface:
         self.sched_id = sched_id
         self.bus = bus
         self.events = EventContainer(bus)
-
         self.scheduled_repeats = []
 
-    def set_bus(self, bus):
-        self.bus = bus
-        self.events.set_bus(bus)
-
-    def set_id(self, sched_id):
-        self.sched_id = sched_id
-
-    def _create_unique_name(self, name):
-        """Return a name unique to this skill using the format
-        [skill_id]:[name].
+    def schedule_repeating_event(self, handler, when, interval,
+                                 data=None, name=None):
+        """Schedule a repeating event.
 
         Arguments:
-            name:   Name to use internally
-
-        Returns:
-            str: name unique to this skill
+            handler:                method to be called
+            when (datetime):        time (in system timezone) for first
+                                    calling the handler, or None to
+                                    initially trigger <frequency> seconds
+                                    from now
+            interval (float/int):   time in seconds between calls
+            data (dict, optional):  data to send when the handler is called
+            name (str, optional):   reference name, must be unique
         """
-        return str(self.sched_id) + ':' + (name or '')
+        # Do not schedule if this event is already scheduled by the skill
+        if name not in self.scheduled_repeats:
+            # If only interval is given set to trigger in [interval] seconds
+            # from now.
+            if not when:
+                when = datetime.now() + timedelta(seconds=interval)
+            self._schedule_event(handler, when, data, name, interval)
+        else:
+            LOG.debug('The event is already scheduled, cancel previous '
+                      'event if this scheduling should replace the last.')
 
     def _schedule_event(self, handler, when, data, name, repeat_interval=None):
         """Underlying method for schedule_event and schedule_repeating_event.
@@ -322,6 +327,25 @@ class EventSchedulerInterface:
         self.bus.emit(Message('mycroft.scheduler.schedule_event',
                               data=event_data))
 
+    def set_bus(self, bus):
+        self.bus = bus
+        self.events.set_bus(bus)
+
+    def set_id(self, sched_id):
+        self.sched_id = sched_id
+
+    def _create_unique_name(self, name):
+        """Return a name unique to this skill using the format
+        [skill_id]:[name].
+
+        Arguments:
+            name:   Name to use internally
+
+        Returns:
+            str: name unique to this skill
+        """
+        return str(self.sched_id) + ':' + (name or '')
+
     def schedule_event(self, handler, when, data=None, name=None):
         """Schedule a single-shot event.
 
@@ -337,31 +361,6 @@ class EventSchedulerInterface:
                                    name.
         """
         self._schedule_event(handler, when, data, name)
-
-    def schedule_repeating_event(self, handler, when, interval,
-                                 data=None, name=None):
-        """Schedule a repeating event.
-
-        Arguments:
-            handler:                method to be called
-            when (datetime):        time (in system timezone) for first
-                                    calling the handler, or None to
-                                    initially trigger <frequency> seconds
-                                    from now
-            interval (float/int):   time in seconds between calls
-            data (dict, optional):  data to send when the handler is called
-            name (str, optional):   reference name, must be unique
-        """
-        # Do not schedule if this event is already scheduled by the skill
-        if name not in self.scheduled_repeats:
-            # If only interval is given set to trigger in [interval] seconds
-            # from now.
-            if not when:
-                when = datetime.now() + timedelta(seconds=interval)
-            self._schedule_event(handler, when, data, name, interval)
-        else:
-            LOG.debug('The event is already scheduled, cancel previous '
-                      'event if this scheduling should replace the last.')
 
     def update_scheduled_event(self, name, data=None):
         """Change data of event.

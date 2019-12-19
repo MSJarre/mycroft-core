@@ -23,6 +23,7 @@ from threading import Thread
 from mycroft.api import STTApi, HTTPError
 from mycroft.configuration import Configuration
 from mycroft.util.log import LOG
+from mycroft.util import connected
 
 
 class STT(metaclass=ABCMeta):
@@ -220,6 +221,15 @@ class MycroftSTT(STT):
         except Exception:
             return self.api.stt(audio.get_flac_data(), self.lang, 1)[0]
 
+class PocketSphinxSTT(BasicSTT):
+    def __init__(self):
+        LOG.info("Starting PockerSphinx")
+        super(PocketSphinxSTT, self).__init__()
+        from mycroft.stt.pocketsphinx_stt import PocketSphinxRecognizer
+        self.recognizer = PocketSphinxRecognizer(self.lang)
+
+    def execute(self, audio, language=None):
+        return self.recognizer.recognize(audio)
 
 class MycroftDeepSpeechSTT(STT):
     """Mycroft Hosted DeepSpeech"""
@@ -444,7 +454,7 @@ class BingSTT(TokenSTT):
 
     def execute(self, audio, language=None):
         self.lang = language or self.lang
-        return self.recognizer.recognize_bing(audio, self.token,
+        return self.recognizer.recognize_azure(audio, self.token,
                                               self.lang)
 
 
@@ -492,12 +502,14 @@ class STTFactory:
         "deepspeech_server": DeepSpeechServerSTT,
         "deepspeech_stream_server": DeepSpeechStreamServerSTT,
         "mycroft_deepspeech": MycroftDeepSpeechSTT,
-        "yandex": YandexSTT
+        "yandex": YandexSTT,
+        "pocketsphinx": PocketSphinxSTT
+
     }
 
     @staticmethod
     def create():
-        try:
+        '''try:
             config = Configuration.get().get("stt", {})
             module = config.get("module", "mycroft")
             clazz = STTFactory.CLASSES.get(module)
@@ -510,4 +522,22 @@ class STTFactory:
             if module != 'mycroft':
                 return MycroftSTT()
             else:
-                raise
+                raise'''
+        if connected() is True:
+            LOG.info("On lance le GoogleSTT")
+            try:
+                return GoogleSTT()
+            except Exception as e:
+                # The STT backend failed to start. Report it and fall back to
+                # default.
+                LOG.exception('The selected STT backend could not be loaded, '
+                              'falling back to default...')
+                config = Configuration.get().get("stt", {})
+                module = config.get("module", "mycroft")
+                if module != 'mycroft':
+                    return MycroftSTT()
+                else:
+                    raise
+        else:
+            LOG.info("On lance le PocketSphinxSTT")
+            return PocketSphinxSTT()

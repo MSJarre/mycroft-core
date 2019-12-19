@@ -27,7 +27,7 @@ from mycroft.version import VersionManager
 from mycroft.util import get_arch, connected, LOG
 
 
-_paired_cache = False
+_paired_cache = True
 
 
 class BackendDown(RequestException):

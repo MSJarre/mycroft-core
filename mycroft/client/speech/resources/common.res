@@ -1,0 +1,1 @@
+/home/manuel/duke/snowboy/resources/common.res

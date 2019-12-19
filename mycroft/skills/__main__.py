@@ -186,8 +186,7 @@ def main():
     _register_intent_services(bus)
     event_scheduler = EventScheduler(bus)
     skill_manager = _initialize_skill_manager(bus)
-
-    _wait_for_internet_connection()
+    #_wait_for_internet_connection()
 
     if skill_manager is None:
         skill_manager = _initialize_skill_manager(bus)

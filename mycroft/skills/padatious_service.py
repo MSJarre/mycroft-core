@@ -26,6 +26,7 @@ from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import LOG
 
 
+
 class PadatiousService(FallbackSkill):
     instance = None
 
@@ -87,12 +88,13 @@ class PadatiousService(FallbackSkill):
         LOG.info('Training... (single_thread={})'.format(single_thread))
         self.container.train(single_thread=single_thread)
         LOG.info('Training complete.')
-
         self.finished_training_event.set()
         if not self.finished_initial_train:
             LOG.info("Mycroft is all loaded and ready to roll!")
             self.bus.emit(Message('mycroft.ready'))
             self.finished_initial_train = True
+
+
 
     def wait_and_train(self):
         if not self.finished_initial_train:

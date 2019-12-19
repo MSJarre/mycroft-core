@@ -1,0 +1,1 @@
+/home/manuel/duke/snowboy/swig/Python3/snowboydetect.py

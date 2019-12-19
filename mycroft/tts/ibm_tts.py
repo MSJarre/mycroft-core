@@ -23,7 +23,7 @@ class WatsonTTS(RemoteTTS):
     PARAMS = {'accept': 'audio/wav'}
 
     def __init__(self, lang, config,
-                 url="https://stream.watsonplatform.net/text-to-speech/api"):
+                 url="https://stream-fra.watsonplatform.net/text-to-speech/api"):
         super(WatsonTTS, self).__init__(lang, config, url, '/v1/synthesize',
                                         WatsonTTSValidator(self))
         self.type = "wav"

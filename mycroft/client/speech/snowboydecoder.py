@@ -1,0 +1,1 @@
+/home/manuel/duke/snowboy/examples/Python3/snowboydecoder.py

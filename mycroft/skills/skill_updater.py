@@ -192,7 +192,9 @@ class SkillUpdater:
         upload_allowed = self.config['skills'].get('upload_skill_manifest')
         if upload_allowed and is_paired():
             if reload_skills_manifest:
-                self.msm.clear_cache()
+                # TODO: Handle inside msm
+                self.msm._device_skill_state = None
+
             try:
                 device_api = DeviceApi()
                 device_api.upload_skills_data(self.msm.device_skill_state)

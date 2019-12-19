@@ -146,7 +146,7 @@ function launch-all() {
     launch-background skills
     launch-background audio
     launch-background voice
-    launch-background enclosure
+#    launch-background enclosure
 }
 
 function check-dependencies() {

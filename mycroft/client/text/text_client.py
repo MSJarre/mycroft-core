@@ -62,7 +62,7 @@ log_lock = Lock()
 max_log_lines = 5000
 mergedLog = []
 filteredLog = []
-default_log_filters = ["mouth.viseme", "mouth.display", "mouth.icon"]
+default_log_filters = ["mouth.viseme", "mouth.display", "mouth.icon", "DEBUG"]
 log_filters = list(default_log_filters)
 log_files = []
 find_str = None
@@ -175,8 +175,7 @@ def load_settings():
         with io.open(config_file, 'r') as f:
             config = json.load(f)
         if "filters" in config:
-            # Disregard the filtering of DEBUG messages
-            log_filters = [f for f in config["filters"] if f != "DEBUG"]
+            log_filters = config["filters"]
         if "cy_chat_area" in config:
             cy_chat_area = config["cy_chat_area"]
         if "show_last_key" in config:

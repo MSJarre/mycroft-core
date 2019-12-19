@@ -35,7 +35,7 @@ Do you wish to continue? (y/n)'
         [Yy])
             sudo rm -rf /var/log/mycroft
             rm -f /var/tmp/mycroft_web_cache.json
-            rm -rf "${TMPDIR:-/tmp}/mycroft"
+            rm -f "${TMPDIR:-/tmp}/mycroft"
             rm -rf "$HOME/.mycroft"
             sudo rm -rf "/opt/mycroft"
             exit 0
@@ -298,7 +298,7 @@ function os_is_like() {
 }
 
 function redhat_common_install() {
-    $SUDO yum install -y cmake gcc-c++ git python3-devel libtool libffi-devel openssl-devel autoconf automake bison swig portaudio-devel mpg123 flac curl libicu-devel libjpeg-devel fann-devel pulseaudio
+    $SUDO yum install -y cmake gcc-c++ git python34 python34-devel libtool libffi-devel openssl-devel autoconf automake bison swig portaudio-devel mpg123 flac curl libicu-devel python34-pkgconfig libjpeg-devel fann-devel python34-libs pulseaudio
     git clone https://github.com/libfann/fann.git
     cd fann
     git checkout b211dc3db3a6a2540a34fbe8995bf2df63fc9939
@@ -342,8 +342,7 @@ function fedora_install() {
 
 
 function arch_install() {
-    $SUDO pacman -S --needed --noconfirm git python python-pip python-setuptools python-virtualenv python-gobject libffi swig portaudio mpg123 screen flac curl icu libjpeg-turbo base-devel jq pulseaudio pulseaudio-alsa
-
+    $SUDO pacman -S --needed --noconfirm git python python-pip python-setuptools python-virtualenv python-gobject python-virtualenvwrapper libffi swig portaudio mpg123 screen flac curl icu libjpeg-turbo base-devel jq pulseaudio pulseaudio-alsa
     pacman -Qs '^fann$' &> /dev/null || (
         git clone  https://aur.archlinux.org/fann.git
         cd fann
@@ -415,7 +414,7 @@ function install_venv() {
     # Force version of pip for reproducability, but there is nothing special
     # about this version.  Update whenever a new version is released and
     # verified functional.
-    curl https://bootstrap.pypa.io/3.3/get-pip.py | "${VIRTUALENV_ROOT}/bin/python" - 'pip==18.0.0'
+    curl https://bootstrap.pypa.io/3.3/get-pip.py | "${VIRTUALENV_ROOT}/bin/python" - 'pip'
     # Function status depending on if pip exists
     [[ -x ${VIRTUALENV_ROOT}/bin/pip ]]
 }

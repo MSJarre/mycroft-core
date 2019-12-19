@@ -324,7 +324,7 @@ def normalize(text, lang=None, remove_articles=True):
     elif lang_code == "it":
         return normalize_it(text, remove_articles)
     elif lang_code == "fr":
-        return normalize_fr(text, remove_articles)
+        return text
     elif lang_code == "sv":
         return normalize_sv(text, remove_articles)
     elif lang_code == "de":

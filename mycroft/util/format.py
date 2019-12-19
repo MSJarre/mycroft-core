@@ -521,8 +521,10 @@ def _duration_handler(time1, lang=None, speech=True, *, time2=None,
     if time2:
         type2 = type(time2)
         if type1 is not type2:
-            raise Exception("nice_duration() can't combine data types: "
-                            "{} and {}".format(type1, type2))
+            raise Exception("nice_duration(" + str(time1) + ", " +
+                            str(time2) + "): \n\t can't "
+                            "combine data types: " + str(type(time1)) +
+                            " and " + str(type(time2)))
         elif type1 is datetime.datetime:
             duration = time1 - time2
             _leapdays = (abs(leapdays(time1.year, time2.year)))
@@ -530,13 +532,13 @@ def _duration_handler(time1, lang=None, speech=True, *, time2=None,
             # when operating on datetimes, refuse resolutions that
             # would result in bunches of trailing zeroes
             if all([time1.second == 0, time2.second == 0,
-                    resolution.value >= TimeResolution.SECONDS.value]):
+                    resolution.value >= 5]):
                 resolution = TimeResolution.MINUTES
             if all([time1.minute == 0, time2.minute == 0,
-                    resolution.value == TimeResolution.MINUTES.value]):
+                    resolution.value == 4]):
                 resolution = TimeResolution.HOURS
             if all([time1.hour == 0, time2.hour == 0,
-                    resolution.value == TimeResolution.HOURS.value]):
+                    resolution.value == 3]):
                 resolution = TimeResolution.DAYS
 
         else:
@@ -689,13 +691,12 @@ def _duration_handler(time1, lang=None, speech=True, *, time2=None,
         out = out.strip()
 
     if not out:
-        out = "zero " if speech else "0"
         if _input_resolution == TimeResolution.YEARS:
-            out += "years" if speech else "y"
+            out = "zero years" if speech else "0y"
         elif _input_resolution == TimeResolution.DAYS:
-            out += "days" if speech else "d"
+            out = "zero days" if speech else "0d"
         elif _input_resolution == TimeResolution.HOURS:
-            out += "hours" if speech else "h"
+            out = "zero hours" if speech else "0h"
         elif _input_resolution == TimeResolution.MINUTES:
             if speech:
                 out = "under a minute" if seconds > 0 else "zero minutes"
