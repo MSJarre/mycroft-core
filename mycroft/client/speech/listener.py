@@ -185,7 +185,13 @@ class AudioConsumer(Thread):
 
     # TODO: Localization
     def process(self, audio):
-
+        if audio == "OfflineSkill":
+            payload = {
+                'utterances': ["OfflineSkill"],
+                'lang': self.stt.lang,
+                'session': SessionManager.get().session_id,
+                'ident': 1
+            }
         if self._audio_length(audio) >= self.MIN_AUDIO_SIZE:
             stopwatch = Stopwatch()
             with stopwatch:
@@ -216,35 +222,39 @@ class AudioConsumer(Thread):
             """ Send message that nothing was transcribed. """
             self.emitter.emit('recognizer_loop:speech.recognition.unknown')
 
-        try:
-            # Invoke the STT engine on the audio clip
-            text = self.stt.execute(audio)
-            if text is not None:
-                text = text.lower().strip()
-                LOG.debug("STT: " + text)
-            else:
-                send_unknown_intent()
-                LOG.info('no words were transcribed')
-            return text
-        except sr.RequestError as e:
-            LOG.error("Could not request Speech Recognition {0}".format(e))
-        except ConnectionError as e:
-            LOG.error("Connection Error: {0}".format(e))
-
-            self.emitter.emit("recognizer_loop:no_internet")
-        except RequestException as e:
-            LOG.error(e.__class__.__name__ + ': ' + str(e))
-        except Exception as e:
-            send_unknown_intent()
-            LOG.error(e)
-            LOG.error("Speech Recognition could not understand audio")
-            return None
-
-        if connected():
-            dialog_name = 'backend.down'
+        if connected() is False:
+            return "Fonctionnalité hors ligne"
         else:
-            dialog_name = 'not connected to the internet'
-        self.emitter.emit('speak', {'utterance': dialog.get(dialog_name)})
+            try:
+                # Invoke the STT engine on the audio clip
+                text = self.stt.execute(audio)
+                if text is not None:
+                    text = text.lower().strip()
+                    LOG.debug("STT: " + text)
+                else:
+                    send_unknown_intent()
+                    LOG.info('no words were transcribed')
+                return text
+            except sr.RequestError as e:
+                LOG.error("Could not request Speech Recognition {0}".format(e))
+            except ConnectionError as e:
+                LOG.error("Connection Error: {0}".format(e))
+
+                self.emitter.emit("recognizer_loop:no_internet")
+            except RequestException as e:
+                LOG.error(e.__class__.__name__ + ': ' + str(e))
+            except Exception as e:
+                send_unknown_intent()
+                LOG.error(e)
+                LOG.error("Speech Recognition could not understand audio")
+                return None
+
+            '''Useless now that we deal with offline stt
+            if connected():
+                dialog_name = 'backend.down'
+            else:
+                dialog_name = 'not connected to the internet'
+            self.emitter.emit('speak', {'utterance': dialog.get(dialog_name)})'''
 
     def __speak(self, utterance):
         payload = {

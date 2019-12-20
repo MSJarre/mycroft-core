@@ -40,7 +40,8 @@ from mycroft.util import (
     check_for_signal,
     get_ipc_directory,
     resolve_resource_file,
-    play_wav
+    play_wav,
+    connected
 )
 from mycroft.util.log import LOG
 
@@ -618,7 +619,6 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
         self._listen_triggered = False
         if self._stop_signaled:
             return
-
         LOG.debug("Recording...")
         # If enabled, play a wave file with a short sound to audibly
         # indicate recording has begun.
@@ -651,7 +651,6 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
             with open(filename, 'wb') as filea:
                 filea.write(audio_data.get_wav_data())
             LOG.debug("Thinking...")
-
         return audio_data
 
     def _adjust_threshold(self, energy, seconds_per_buffer):
