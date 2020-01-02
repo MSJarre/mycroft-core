@@ -473,6 +473,7 @@ class TTSFactory:
     from mycroft.tts.responsive_voice_tts import ResponsiveVoice
     from mycroft.tts.mimic2_tts import Mimic2
     from mycroft.tts.yandex_tts import YandexTTS
+    from mycroft.tts.PicoTTs import SpdSayPico
 
     CLASSES = {
         "mimic": Mimic,
@@ -485,7 +486,8 @@ class TTSFactory:
         "watson": WatsonTTS,
         "bing": BingTTS,
         "responsive_voice": ResponsiveVoice,
-        "yandex": YandexTTS
+        "yandex": YandexTTS,
+        "spdpico": SpdSayPico
     }
 
     @staticmethod
@@ -511,7 +513,7 @@ class TTSFactory:
         except Exception as e:
             # Fallback to mimic if an error occurs while loading.
             if tts_module != 'mimic':
-                LOG.exception('The selected TTS backend couldn\'t be loaded. '
+                LOG.exception('The selected TTS backend couldnt be loaded. '
                               'Falling back to Mimic')
                 from mycroft.tts.mimic_tts import Mimic
                 tts = Mimic(tts_lang, tts_config)

@@ -13,24 +13,24 @@
 # limitations under the License.
 #
 import subprocess
-from mycroft.util.log import getLogger
+from mycroft.util import play_wav, is_speaking
 from mycroft.tts import TTS, TTSValidator
 
 
-class ESpeak(TTS):
+class SpdSayPico(TTS):
     def __init__(self, lang, config):
-        super(ESpeak, self).__init__(lang, config, ESpeakValidator(self))
+        super(SpdSayPico, self).__init__(lang, config, SpdSayValidator(self))
 
     def execute(self, sentence, ident=None, listen=False):
         self.begin_audio()
-        subprocess.call(
-            ['espeak', '-v', self.lang + '+' + self.voice, sentence])
+        subprocess.call(['/usr/bin/pico2wave','-l=fr-FR', '-w=/tmp/tmp_say.wav', '"'+sentence+'"'])
+        subprocess.call(["aplay", "/tmp/tmp_say.wav"])
         self.end_audio(listen)
 
 
-class ESpeakValidator(TTSValidator):
+class SpdSayValidator(TTSValidator):
     def __init__(self, tts):
-        super(ESpeakValidator, self).__init__(tts)
+        super(SpdSayValidator, self).__init__(tts)
 
     def validate_lang(self):
         # TODO
@@ -38,10 +38,11 @@ class ESpeakValidator(TTSValidator):
 
     def validate_connection(self):
         try:
-            subprocess.call(['espeak', '--version'])
+            subprocess.call(['spd-say', '--version'])
         except Exception:
             raise Exception(
-                'ESpeak is not installed. Run: sudo apt-get install espeak')
+                'SpdSay is not installed. Run: sudo apt-get install '
+                'speech-dispatcher')
 
     def get_tts_class(self):
-        return ESpeak
+        return SpdSayPico
