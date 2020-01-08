@@ -222,32 +222,29 @@ class AudioConsumer(Thread):
             """ Send message that nothing was transcribed. """
             self.emitter.emit('recognizer_loop:speech.recognition.unknown')
 
-        if connected() is False:
-            return "Fonctionnalité hors ligne"
-        else:
-            try:
-                # Invoke the STT engine on the audio clip
-                text = self.stt.execute(audio)
-                if text is not None:
-                    text = text.lower().strip()
-                    LOG.debug("STT: " + text)
-                else:
-                    send_unknown_intent()
-                    LOG.info('no words were transcribed')
-                return text
-            except sr.RequestError as e:
-                LOG.error("Could not request Speech Recognition {0}".format(e))
-            except ConnectionError as e:
-                LOG.error("Connection Error: {0}".format(e))
-
-                self.emitter.emit("recognizer_loop:no_internet")
-            except RequestException as e:
-                LOG.error(e.__class__.__name__ + ': ' + str(e))
-            except Exception as e:
+        try:
+            # Invoke the STT engine on the audio clip
+            text = self.stt.execute(audio)
+            if text is not None:
+                text = text.lower().strip()
+                LOG.debug("STT: " + text)
+            else:
                 send_unknown_intent()
-                LOG.error(e)
-                LOG.error("Speech Recognition could not understand audio")
-                return None
+                LOG.info('no words were transcribed')
+            return text
+        except sr.RequestError as e:
+            LOG.error("Could not request Speech Recognition {0}".format(e))
+        except ConnectionError as e:
+            LOG.error("Connection Error: {0}".format(e))
+
+            self.emitter.emit("recognizer_loop:no_internet")
+        except RequestException as e:
+            LOG.error(e.__class__.__name__ + ': ' + str(e))
+        except Exception as e:
+            send_unknown_intent()
+            LOG.error(e)
+            LOG.error("Speech Recognition could not understand audio")
+            return None
 
             '''Useless now that we deal with offline stt
             if connected():

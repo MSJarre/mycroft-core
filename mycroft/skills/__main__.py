@@ -116,7 +116,7 @@ class DevicePrimer(object):
     def _notify_backend_down(self):
         """Notify user of inability to communicate with the backend."""
         self._speak_dialog(dialog_id="backend.down")
-        self.bus.emit(Message("backend.down"))
+        #self.bus.emit(Message("backend.down"))
 
     def _display_skill_loading_notification(self):
         """Indicate to the user that skills are being loaded."""
