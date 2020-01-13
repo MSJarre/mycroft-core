@@ -19,8 +19,6 @@ import pyaudio
 from pyee import EventEmitter
 from requests import RequestException
 from requests.exceptions import ConnectionError
-
-from mycroft import dialog
 from mycroft.client.speech.hotword_factory import HotWordFactory
 from mycroft.client.speech.mic import MutableMicrophone, ResponsiveRecognizer
 from mycroft.configuration import Configuration
@@ -32,6 +30,7 @@ from mycroft.util.log import LOG
 from mycroft.util import find_input_device
 from queue import Queue, Empty
 import json
+import speedtest
 from copy import deepcopy
 
 
@@ -120,6 +119,97 @@ class AudioProducer(Thread):
         self.recognizer.stop()
 
 
+class AudioProducer(Thread):
+    """AudioProducer
+    Given a mic and a recognizer implementation, continuously listens to the
+    mic for potential speech chunks and pushes them onto the queue.
+    """
+
+    def __init__(self, state, queue, mic, recognizer, emitter, stream_handler):
+        super(AudioProducer, self).__init__()
+        self.daemon = True
+        self.state = state
+        self.queue = queue
+        self.mic = mic
+        self.recognizer = recognizer
+        self.emitter = emitter
+        self.stream_handler = stream_handler
+
+    def run(self):
+        restart_attempts = 0
+        with self.mic as source:
+            self.recognizer.adjust_for_ambient_noise(source)
+            while self.state.running:
+                try:
+                    audio = self.recognizer.listen(source, self.emitter,
+                                                   self.stream_handler)
+                    if audio is not None:
+                        self.queue.put((AUDIO_DATA, audio))
+                    else:
+                        LOG.warning("Audio contains no data.")
+                except IOError as e:
+                    # IOError will be thrown if the read is unsuccessful.
+                    # If self.recognizer.overflow_exc is False (default)
+                    # input buffer overflow IOErrors due to not consuming the
+                    # buffers quickly enough will be silently ignored.
+                    LOG.exception('IOError Exception in AudioProducer')
+                    if e.errno == pyaudio.paInputOverflowed:
+                        pass  # Ignore overflow errors
+                    elif restart_attempts < MAX_MIC_RESTARTS:
+                        # restart the mic
+                        restart_attempts += 1
+                        LOG.info('Restarting the microphone...')
+                        source.restart()
+                        LOG.info('Restarted...')
+                    else:
+                        LOG.error('Restarting mic doesn\'t seem to work. '
+                                  'Stopping...')
+                        raise
+                except Exception:
+                    LOG.exception('Exception in AudioProducer')
+                    raise
+                else:
+                    # Reset restart attempt counter on sucessful audio read
+                    restart_attempts = 0
+                finally:
+                    if self.stream_handler is not None:
+                        self.stream_handler.stream_stop()
+
+    def stop(self):
+        """Stop producer thread."""
+        self.state.running = False
+        self.recognizer.stop()
+
+
+global internet_signal_state
+
+
+class SpeedyTest(Thread):
+    """Class that runs a speedtest every 20 seconds
+    Is called in the Init of the AudioProducer class & runs in a separate Thread"""
+
+    @staticmethod
+    def schedule_infinite_speedtests():
+        global internet_signal_state
+        start_time = time.time()
+        while True:
+            internet_signal_state = SpeedyTest.run_speedtest()
+            time.sleep(10 - ((time.time() - start_time) % 10))
+
+    @staticmethod
+    def run_speedtest():
+        global internet_signal_state
+        s = speedtest.Speedtest()
+        s.get_servers()
+        s.get_best_server()
+        upl_speed = s.upload()
+        if upl_speed > 7000000:
+            internet_signal_state = True
+        else:
+            internet_signal_state = False
+        return internet_signal_state
+
+
 class AudioConsumer(Thread):
     """AudioConsumer
     Consumes AudioData chunks off the queue
@@ -139,6 +229,10 @@ class AudioConsumer(Thread):
         self.wakeup_recognizer = wakeup_recognizer
         self.wakeword_recognizer = wakeword_recognizer
         self.metrics = MetricsAggregator()
+        global internet_signal_state
+        internet_signal_state = SpeedyTest.run_speedtest()
+        thread_speedtest = Thread(target=SpeedyTest.schedule_infinite_speedtests)
+        thread_speedtest.start()
 
     def run(self):
         while self.state.running:
@@ -222,36 +316,41 @@ class AudioConsumer(Thread):
             """ Send message that nothing was transcribed. """
             self.emitter.emit('recognizer_loop:speech.recognition.unknown')
 
-        try:
-            # Invoke the STT engine on the audio clip
-            text = self.stt.execute(audio)
-            if text is not None:
-                text = text.lower().strip()
-                LOG.debug("STT: " + text)
-            else:
+        if connected() is False:
+            return "Fonctionnalité hors ligne"
+        elif internet_signal_state is False:
+            return "Connexion trop faible"
+        else:
+            try:
+                # Invoke the STT engine on the audio clip
+                text = self.stt.execute(audio)
+                if text is not None:
+                    text = text.lower().strip()
+                    LOG.debug("STT: " + text)
+                else:
+                    send_unknown_intent()
+                    LOG.info('no words were transcribed')
+                return text
+            except sr.RequestError as e:
+                LOG.error("Could not request Speech Recognition {0}".format(e))
+            except ConnectionError as e:
+                LOG.error("Connection Error: {0}".format(e))
+
+                self.emitter.emit("recognizer_loop:no_internet")
+            except RequestException as e:
+                LOG.error(e.__class__.__name__ + ': ' + str(e))
+            except Exception as e:
                 send_unknown_intent()
-                LOG.info('no words were transcribed')
-            return text
-        except sr.RequestError as e:
-            LOG.error("Could not request Speech Recognition {0}".format(e))
-        except ConnectionError as e:
-            LOG.error("Connection Error: {0}".format(e))
+                LOG.error(e)
+                LOG.error("Speech Recognition could not understand audio")
+                return None
 
-            self.emitter.emit("recognizer_loop:no_internet")
-        except RequestException as e:
-            LOG.error(e.__class__.__name__ + ': ' + str(e))
-        except Exception as e:
-            send_unknown_intent()
-            LOG.error(e)
-            LOG.error("Speech Recognition could not understand audio")
-            return None
-
-            '''Useless now that we deal with offline stt
-            if connected():
-                dialog_name = 'backend.down'
-            else:
-                dialog_name = 'not connected to the internet'
-            self.emitter.emit('speak', {'utterance': dialog.get(dialog_name)})'''
+                '''Useless now that we deal with offline stt
+                if connected():
+                    dialog_name = 'backend.down'
+                else:
+                    dialog_name = 'not connected to the internet'
+                self.emitter.emit('speak', {'utterance': dialog.get(dialog_name)})'''
 
     def __speak(self, utterance):
         payload = {
