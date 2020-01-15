@@ -182,6 +182,7 @@ class AudioProducer(Thread):
 
 
 global internet_signal_state
+internet_signal_state = True
 
 
 class SpeedyTest(Thread):
@@ -199,15 +200,21 @@ class SpeedyTest(Thread):
     @staticmethod
     def run_speedtest():
         global internet_signal_state
-        s = speedtest.Speedtest()
-        s.get_servers()
-        s.get_best_server()
-        upl_speed = s.upload()
-        if upl_speed > 7000000:
-            internet_signal_state = True
-        else:
+        if connected() is False:
+            LOG.info("Il n'y a pas internet")
             internet_signal_state = False
-        return internet_signal_state
+            return internet_signal_state
+        else:
+            s = speedtest.Speedtest()
+            s.get_servers()
+            s.get_best_server()
+            upl_speed = s.upload()
+            LOG.info("Voici la vitesse d'upload : " + str(upl_speed))
+            if upl_speed > 500000:
+                internet_signal_state = True
+            else:
+                internet_signal_state = False
+            return internet_signal_state
 
 
 class AudioConsumer(Thread):
@@ -230,7 +237,6 @@ class AudioConsumer(Thread):
         self.wakeword_recognizer = wakeword_recognizer
         self.metrics = MetricsAggregator()
         global internet_signal_state
-        internet_signal_state = SpeedyTest.run_speedtest()
         thread_speedtest = Thread(target=SpeedyTest.schedule_infinite_speedtests)
         thread_speedtest.start()
 
@@ -344,13 +350,6 @@ class AudioConsumer(Thread):
                 LOG.error(e)
                 LOG.error("Speech Recognition could not understand audio")
                 return None
-
-                '''Useless now that we deal with offline stt
-                if connected():
-                    dialog_name = 'backend.down'
-                else:
-                    dialog_name = 'not connected to the internet'
-                self.emitter.emit('speak', {'utterance': dialog.get(dialog_name)})'''
 
     def __speak(self, utterance):
         payload = {
