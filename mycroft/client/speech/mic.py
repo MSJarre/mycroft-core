@@ -14,11 +14,12 @@
 #
 import audioop
 from time import sleep, time as get_time
-
 from collections import deque
 import datetime
 import json
 import os
+from os.path import join, dirname, expanduser
+import glob
 from os.path import isdir, join
 import pyaudio
 import requests
@@ -187,7 +188,14 @@ def get_silence(num_bytes):
 
 
 class ResponsiveRecognizer(speech_recognition.Recognizer):
-    # Padding of silence when feeding to pocketsphinx
+    '''with open('~/.mycroft/dynamic_mycroft.conf', 'r') as jsonFile:
+        dynamic_conf = json.load(jsonFile)
+        recording_timeout = dynamic_conf["recording_timeout"]
+    # Padding of silence when feeding to pocketsphinx'''
+    dynamic_config_path = join(expanduser('~'), '.mycroft/dynamic_mycroft.conf')
+    with open(dynamic_config_path, 'r') as jsonFile:
+        dynamic_conf = json.load(jsonFile)
+        recording_timeout = dynamic_conf["recording_timeout"]
     SILENCE_SEC = 0.01
 
     # The minimum seconds of noise before a
@@ -200,8 +208,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
 
     # The maximum seconds a phrase can be recorded,
     # provided there is noise the entire time
-    RECORDING_TIMEOUT = 18
-
+    RECORDING_TIMEOUT = 4
     # The maximum time it will continue to record silence
     # when not enough noise has been detected
     RECORDING_TIMEOUT_WITH_SILENCE = 2
@@ -217,7 +224,6 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
         self.wake_word_name = wake_word_recognizer.key_phrase
 
         self.overflow_exc = listener_config.get('overflow_exception', False)
-
         speech_recognition.Recognizer.__init__(self)
         self.wake_word_recognizer = wake_word_recognizer
         self.audio = pyaudio.PyAudio()
@@ -225,8 +231,8 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
         self.energy_ratio = listener_config.get('energy_ratio')
         # check the config for the flag to save wake words.
 
-        self.save_utterances = listener_config.get('save_utterances', False)
-
+        #self.save_utterances = listener_config.get('save_utterances', False)
+        self.save_utterances = True
         self.save_wake_words = listener_config.get('record_wake_words')
         self.saved_wake_words_dir = join(gettempdir(), 'mycroft_wake_words')
 
@@ -277,7 +283,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
         source,
         sec_per_buffer,
         stream=None,
-        ww_frames=None
+        ww_frames=None,
     ):
         """Record an entire spoken phrase.
 
@@ -298,10 +304,18 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
             bytearray: complete audio buffer recorded, including any
                        silence at the end of the user's utterance
         """
-
+        '''Configuration.updated("message")
+        config = Configuration.get()
+        recording_timeout = config.get('listener').get('recording_timeout')
+        self.RECORDING_TIMEOUT = recording_timeout
+        LOG.info("la valeur de recording timeout : "+str(self.RECORDING_TIMEOUT))'''
+        with open(self.dynamic_config_path, 'r') as jsonFile:
+            dynamic_conf = json.load(jsonFile)
+            recording_timeout = dynamic_conf["recording_timeout"]
+        LOG.info("voici le recording timeout : "+str(recording_timeout))
+        self.RECORDING_TIMEOUT = recording_timeout
         num_loud_chunks = 0
         noise = 0
-
         max_noise = 25
         min_noise = 0
 
@@ -640,14 +654,14 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
             source,
             sec_per_buffer,
             stream,
-            ww_frames
+            ww_frames,
         )
         audio_data = self._create_audio_data(frame_data, source)
         emitter.emit("recognizer_loop:record_end")
         if self.save_utterances:
             LOG.info("Recording utterance")
             stamp = str(datetime.datetime.now())
-            filename = "/tmp/mycroft_utterance%s.wav" % stamp
+            filename = "/home/manuel/duke/wavs/utterances/mycroft_%s.wav" % stamp
             with open(filename, 'wb') as filea:
                 filea.write(audio_data.get_wav_data())
             LOG.debug("Thinking...")

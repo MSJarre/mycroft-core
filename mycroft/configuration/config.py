@@ -195,7 +195,7 @@ class Configuration:
             return Configuration.load_config_stack(configs, cache)
 
     @staticmethod
-    def load_config_stack(configs=None, cache=False):
+    def load_config_stack(configs=None, cache=True):
         """
             load a stack of config dicts into a single dict
 

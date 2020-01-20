@@ -289,7 +289,7 @@ class SnowboyHotWord(HotWordEngine):
         paths = []
         for key in models:
             paths.append(models[key])
-        sensitivity = self.config.get("sensitivity", 0.5)
+        sensitivity = self.config.get("sensitivity", 0.45)
         self.snowboy = HotwordDetector(paths,
                                        sensitivity=[sensitivity] * len(paths))
         self.lang = str(lang).lower()
