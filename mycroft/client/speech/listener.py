@@ -186,7 +186,7 @@ internet_signal_state = True
 
 
 class SpeedyTest(Thread):
-    """Class that runs a speedtest every 20 seconds
+    """Class that runs a speedtest every 30 seconds
     Is called in the Init of the AudioProducer class & runs in a separate Thread"""
 
     @staticmethod
@@ -195,7 +195,7 @@ class SpeedyTest(Thread):
         start_time = time.time()
         while True:
             internet_signal_state = SpeedyTest.run_speedtest()
-            time.sleep(10 - ((time.time() - start_time) % 10))
+            time.sleep(30 - ((time.time() - start_time) % 30))
 
     @staticmethod
     def run_speedtest():
@@ -209,7 +209,6 @@ class SpeedyTest(Thread):
             s.get_servers()
             s.get_best_server()
             upl_speed = s.upload()
-            LOG.info("Voici la vitesse d'upload : " + str(upl_speed))
             if upl_speed > 500000:
                 internet_signal_state = True
             else:

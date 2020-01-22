@@ -188,10 +188,7 @@ def get_silence(num_bytes):
 
 
 class ResponsiveRecognizer(speech_recognition.Recognizer):
-    '''with open('~/.mycroft/dynamic_mycroft.conf', 'r') as jsonFile:
-        dynamic_conf = json.load(jsonFile)
-        recording_timeout = dynamic_conf["recording_timeout"]
-    # Padding of silence when feeding to pocketsphinx'''
+    # Padding of silence when feeding to pocketsphinx
     dynamic_config_path = join(expanduser('~'), '.mycroft/dynamic_mycroft.conf')
     with open(dynamic_config_path, 'r') as jsonFile:
         dynamic_conf = json.load(jsonFile)
@@ -304,15 +301,9 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
             bytearray: complete audio buffer recorded, including any
                        silence at the end of the user's utterance
         """
-        '''Configuration.updated("message")
-        config = Configuration.get()
-        recording_timeout = config.get('listener').get('recording_timeout')
-        self.RECORDING_TIMEOUT = recording_timeout
-        LOG.info("la valeur de recording timeout : "+str(self.RECORDING_TIMEOUT))'''
         with open(self.dynamic_config_path, 'r') as jsonFile:
             dynamic_conf = json.load(jsonFile)
             recording_timeout = dynamic_conf["recording_timeout"]
-        LOG.info("voici le recording timeout : "+str(recording_timeout))
         self.RECORDING_TIMEOUT = recording_timeout
         num_loud_chunks = 0
         noise = 0
@@ -661,7 +652,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
         if self.save_utterances:
             LOG.info("Recording utterance")
             stamp = str(datetime.datetime.now())
-            filename = "/home/manuel/duke/wavs/utterances/mycroft_%s.wav" % stamp
+            filename = "/tmp/utterances/mycroft_%s.wav" % stamp
             with open(filename, 'wb') as filea:
                 filea.write(audio_data.get_wav_data())
             LOG.debug("Thinking...")
