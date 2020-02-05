@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from collections import namedtuple
-from datetime import datetime, timedelta
+"""Backwards compatibility with mycroft-core tests to verify functionality."""
+from lingua_franca.lang.parse_en import *
+from lingua_franca.lang.parse_en import _extract_whole_number_with_text_en
+from lingua_franca.lang.parse_en import _extract_decimal_with_text_en
+from lingua_franca.lang.parse_common import ReplaceableNumber
+from lingua_franca.lang.parse_common import tokenize as _tokenize
+from lingua_franca.lang.parse_common import Token as _Token
 
-from dateutil.relativedelta import relativedelta
 
+<<<<<<< HEAD
 from mycroft.util.lang.parse_common import is_numeric, look_for_fractions
 from mycroft.util.lang.common_data_en import _ARTICLES, _NUM_STRING_EN, \
     _LONG_ORDINAL_STRING_EN, _LONG_SCALE_EN, \
@@ -1560,3 +1565,7 @@ def normalize_en(text, remove_articles):
         normalized += " " + word
 
     return normalized[1:]  # strip the initial space
+=======
+class _ReplaceableNumber(ReplaceableNumber):
+    pass
+>>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56

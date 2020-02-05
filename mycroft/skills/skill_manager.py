@@ -123,7 +123,9 @@ class SkillManager(Thread):
                         log_msg = 'Downloading priority skill: {} failed'
                         LOG.exception(log_msg.format(skill_name))
                         continue
-                self._load_skill(skill.path)
+                loader = self._load_skill(skill.path)
+                if loader:
+                    self.upload_queue.put(loader)
             else:
                 LOG.error(
                     'Priority skill {} can\'t be found'.format(skill_name)
@@ -149,6 +151,15 @@ class SkillManager(Thread):
                 self._load_new_skills()
                 self._unload_removed_skills()
                 self._update_skills()
+<<<<<<< HEAD
+=======
+                if (is_paired() and self.upload_queue.started and
+                        len(self.upload_queue) > 0):
+                    self.msm.clear_cache()
+                    self.skill_updater.post_manifest()
+                    self.upload_queue.send()
+
+>>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56
                 sleep(2)  # Pause briefly before beginning next scan
             except Exception:
                 LOG.exception('Something really unexpected has occured '

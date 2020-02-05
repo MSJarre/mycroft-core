@@ -414,7 +414,11 @@ function install_venv() {
     # Force version of pip for reproducability, but there is nothing special
     # about this version.  Update whenever a new version is released and
     # verified functional.
+<<<<<<< HEAD
     curl https://bootstrap.pypa.io/3.3/get-pip.py | "${VIRTUALENV_ROOT}/bin/python" - 'pip'
+=======
+    curl https://bootstrap.pypa.io/get-pip.py | "${VIRTUALENV_ROOT}/bin/python" - 'pip==20.0.2'
+>>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56
     # Function status depending on if pip exists
     [[ -x ${VIRTUALENV_ROOT}/bin/pip ]]
 }
