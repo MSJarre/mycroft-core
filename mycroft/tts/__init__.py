@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from copy import deepcopy
-import hashlib
-import os
-import random
-import re
-from abc import ABCMeta, abstractmethod
-from threading import Thread
-from time import time, sleep
+"""The TTS module contains TTS classes for interfacing with various TTS
+services. This includes both local and remote services. The module also
+declares a "factory" for spawning a TTS service based on configuration.
+"""
 
+<<<<<<< HEAD
 import os.path
 from os.path import dirname, exists, isdir, join
 
@@ -523,3 +520,6 @@ class TTSFactory:
                 raise
 
         return tts
+=======
+from .tts import TTSFactory, TTS, TTSValidator, PlaybackThread
+>>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56

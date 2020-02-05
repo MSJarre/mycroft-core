@@ -201,7 +201,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
 
     # The minimum seconds of silence required at the end
     # before a phrase will be considered complete
-    MIN_SILENCE_AT_END = 0.8
+    MIN_SILENCE_AT_END = 1
 
     # The maximum seconds a phrase can be recorded,
     # provided there is noise the entire time
