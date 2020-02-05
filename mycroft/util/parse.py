@@ -253,35 +253,11 @@ def extract_duration(text, lang=None):
     lang_code = get_primary_lang_code(lang)
 
     if lang_code == "en":
-<<<<<<< HEAD
-        return normalize_en(text, remove_articles)
-    elif lang_code == "es":
-        return normalize_es(text, remove_articles)
-    elif lang_code == "pt":
-        return normalize_pt(text, remove_articles)
-    elif lang_code == "it":
-        return normalize_it(text, remove_articles)
-    elif lang_code == "fr":
-        return text
-    elif lang_code == "sv":
-        return normalize_sv(text, remove_articles)
-    elif lang_code == "de":
-        return normalize_de(text, remove_articles)
-    elif lang_code == "da":
-        return normalize_da(text, remove_articles)
-    elif lang_code == "nl":
-        return normalize_nl(text, remove_articles)
-    # TODO: Normalization for other languages
-    _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr', 'sv',
-                                          'de', 'da', 'nl'])
-    return text
-=======
         return extract_duration_en(text)
 
     # TODO: extract_duration for other languages
     _log_unsupported_language(lang_code, ['en'])
     return None
->>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56
 
 
 def get_gender(word, context="", lang=None):

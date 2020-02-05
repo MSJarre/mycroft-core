@@ -16,7 +16,7 @@ import abc
 import re
 from requests_futures.sessions import FuturesSession
 
-from .tts import TTS
+from mycroft.tts import TTS, TTSValidator
 from mycroft.util import remove_last_slash, play_wav
 from mycroft.util.log import LOG
 

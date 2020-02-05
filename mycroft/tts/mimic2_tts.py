@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-from .tts import TTS, TTSValidator
+from mycroft.tts import TTS, TTSValidator
 from .remote_tts import RemoteTTSTimeoutException
 from mycroft.util.log import LOG
 from mycroft.tts import cache_handler

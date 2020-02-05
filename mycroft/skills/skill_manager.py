@@ -15,7 +15,7 @@
 """Load, update and manage skills on this device."""
 import os
 from glob import glob
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from time import sleep, time
 
 from mycroft.enclosure.api import EnclosureAPI
@@ -29,6 +29,47 @@ from .skill_updater import SkillUpdater
 
 SKILL_MAIN_MODULE = '__init__.py'
 
+class UploadQueue:
+    """Queue for holding loaders with data that still needs to be uploaded.
+    This queue can be used during startup to capture all loaders
+    and then processing can be triggered at a later stage when the system is
+    connected to the backend.
+    After all queued settingsmeta has been processed and the queue is empty
+    the queue will set the self.started flag.
+    """
+    def __init__(self):
+        self._queue = []
+        self.started = False
+        self.lock = Lock()
+
+    def start(self):
+        """Start processing of the queue."""
+        self.send()
+        self.started = True
+
+    def send(self):
+        """Loop through all stored loaders triggering settingsmeta upload."""
+        with self.lock:
+            queue = self._queue
+            self._queue = []
+        if queue:
+            LOG.info('New Settings meta to upload.')
+            for loader in queue:
+                loader.instance.settings_meta.upload()
+
+    def __len__(self):
+        return len(self._queue)
+
+    def put(self, loader):
+        """Append a skill loader to the queue.
+        If a loader is already present it's removed in favor of the new entry.
+        """
+        if self.started:
+            LOG.info('Updating settings meta during runtime...')
+        with self.lock:
+            # Remove existing loader
+            self._queue == [e for e in self._queue if e != loader]
+            self._queue.append(loader)
 
 class SkillManager(Thread):
     _msm = None
@@ -52,6 +93,7 @@ class SkillManager(Thread):
         self.settings_downloader = SkillSettingsDownloader(self.bus)
         self._define_message_bus_events()
         self.skill_updater = SkillUpdater()
+        self.upload_queue = UploadQueue()
         self.daemon = True
 
         # Statuses
@@ -151,15 +193,12 @@ class SkillManager(Thread):
                 self._load_new_skills()
                 self._unload_removed_skills()
                 self._update_skills()
-<<<<<<< HEAD
-=======
-                if (is_paired() and self.upload_queue.started and
+                if (self.upload_queue.started and
                         len(self.upload_queue) > 0):
                     self.msm.clear_cache()
                     self.skill_updater.post_manifest()
                     self.upload_queue.send()
 
->>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56
                 sleep(2)  # Pause briefly before beginning next scan
             except Exception:
                 LOG.exception('Something really unexpected has occured '

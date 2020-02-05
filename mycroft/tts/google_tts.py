@@ -14,7 +14,7 @@
 #
 from gtts import gTTS
 
-from .tts import TTS, TTSValidator
+from mycroft.tts import TTS, TTSValidator
 
 
 class GoogleTTS(TTS):

@@ -17,7 +17,6 @@ services. This includes both local and remote services. The module also
 declares a "factory" for spawning a TTS service based on configuration.
 """
 
-<<<<<<< HEAD
 import os.path
 from os.path import dirname, exists, isdir, join
 
@@ -31,6 +30,15 @@ from mycroft.util import (
 )
 from mycroft.util.log import LOG
 from queue import Queue, Empty
+#
+from copy import deepcopy
+import hashlib
+import os
+import random
+import re
+from abc import ABCMeta, abstractmethod
+from threading import Thread
+from time import time
 
 
 _TTS_ENV = deepcopy(os.environ)
@@ -520,6 +528,3 @@ class TTSFactory:
                 raise
 
         return tts
-=======
-from .tts import TTSFactory, TTS, TTSValidator, PlaybackThread
->>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56

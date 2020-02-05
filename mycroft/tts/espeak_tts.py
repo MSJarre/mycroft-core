@@ -13,13 +13,8 @@
 # limitations under the License.
 #
 import subprocess
-<<<<<<< HEAD
 from mycroft.util.log import getLogger
 from mycroft.tts import TTS, TTSValidator
-=======
-
-from .tts import TTS, TTSValidator
->>>>>>> 389c7dcc8d9df5dbe17cff03e1065075ca28ac56
 
 
 class ESpeak(TTS):
