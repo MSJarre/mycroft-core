@@ -212,6 +212,8 @@ class MycroftSTT(STT):
         super(MycroftSTT, self).__init__()
         self.api = STTApi("stt")
 
+    LOG.info("on a lancé le mycroft STT")
+
     @requires_pairing
     def execute(self, audio, language=None):
         self.lang = language or self.lang
@@ -524,9 +526,11 @@ class STTFactory:
             else:
                 raise'''
         if connected() is True:
-            LOG.info("On lance le GoogleSTT")
             try:
-                return GoogleSTT()
+                config = Configuration.get().get("stt", {})
+                module = config.get("module", "mycroft")
+                clazz = STTFactory.CLASSES.get(module)
+                return clazz()
             except Exception as e:
                 # The STT backend failed to start. Report it and fall back to
                 # default.
@@ -539,5 +543,4 @@ class STTFactory:
                 else:
                     raise
         else:
-            LOG.info("On lance le PocketSphinxSTT")
             return PocketSphinxSTT()
