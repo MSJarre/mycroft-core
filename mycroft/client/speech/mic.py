@@ -201,7 +201,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
 
     # The minimum seconds of silence required at the end
     # before a phrase will be considered complete
-    MIN_SILENCE_AT_END = 1
+    MIN_SILENCE_AT_END = 1.5
 
     # The maximum seconds a phrase can be recorded,
     # provided there is noise the entire time
@@ -652,7 +652,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
         if self.save_utterances:
             LOG.info("Recording utterance")
             stamp = str(datetime.datetime.now())
-            filename = "/tmp/utterances/mycroft_%s.wav" % stamp
+            filename = "/opt/mycroft/utterances/mycroft_%s.wav" % stamp
             with open(filename, 'wb') as filea:
                 filea.write(audio_data.get_wav_data())
             LOG.debug("Thinking...")
