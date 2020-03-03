@@ -209,6 +209,7 @@ class SpeedyTest(Thread):
             s.get_servers()
             s.get_best_server()
             upl_speed = s.upload()
+            LOG.info("upload speed : { "+str(upl_speed)+" }")
             if upl_speed > 500000:
                 internet_signal_state = True
             else:
@@ -236,8 +237,8 @@ class AudioConsumer(Thread):
         self.wakeword_recognizer = wakeword_recognizer
         self.metrics = MetricsAggregator()
         global internet_signal_state
-        thread_speedtest = Thread(target=SpeedyTest.schedule_infinite_speedtests)
-        thread_speedtest.start()
+        #thread_speedtest = Thread(target=SpeedyTest.schedule_infinite_speedtests)
+        #thread_speedtest.start()
 
     def run(self):
         while self.state.running:
