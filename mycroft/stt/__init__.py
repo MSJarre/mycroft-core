@@ -36,6 +36,7 @@ class STT(metaclass=ABCMeta):
         self.credential = self.config.get("credential", {})
         self.recognizer = Recognizer()
         self.can_stream = False
+        Le STT est mort Muahahaha
 
     @staticmethod
     def init_language(config_core):
