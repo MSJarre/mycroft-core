@@ -205,7 +205,7 @@ class ResponsiveRecognizer(speech_recognition.Recognizer):
 
     # The maximum seconds a phrase can be recorded,
     # provided there is noise the entire time
-    RECORDING_TIMEOUT = 4
+    RECORDING_TIMEOUT = 60
     # The maximum time it will continue to record silence
     # when not enough noise has been detected
     RECORDING_TIMEOUT_WITH_SILENCE = 2

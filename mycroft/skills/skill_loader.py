@@ -87,8 +87,7 @@ class SkillLoader:
         try:
             self.last_modified = _get_last_modified_time(self.skill_directory)
         except FileNotFoundError as e:
-            LOG.error('Failed to get last_modification time '
-                      '({})'.format(repr(e)))
+            #LOG.error('Failed to get last_modification time ''({})'.format(repr(e)))
             self.last_modified = self.last_loaded
 
         modified = self.last_modified > self.last_loaded
